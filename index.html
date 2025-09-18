@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Practice Lab — Demo Index</title>
+  <style>
+    :root{--bg:#0b1020;--card:#0f1724;--accent:#2563eb;--muted:#9aa4bf}
+    body{font-family:Inter,system-ui,Segoe UI,Arial;background:linear-gradient(180deg,#071023 0%,#0b1020 100%);color:#e6eef8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:900px;max-width:100%;background:var(--card);border-radius:12px;padding:20px;box-shadow:0 10px 30px rgba(2,6,23,.6)}
+    h1{margin:0 0 8px;font-size:20px}
+    p.lead{color:var(--muted);margin:0 0 18px}
+    .cols{display:flex;gap:16px}
+    .col{flex:1}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    input[type=text],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#071823;color:#e6eef8}
+    button{background:var(--accent);border:0;padding:10px 14px;color:white;border-radius:8px;cursor:pointer}
+    .note{font-size:12px;color:var(--muted);margin-top:8px}
+    pre{background:#071627;padding:10px;border-radius:8px;overflow:auto;color:#cfe9ff}
+    .vuln{background:#1b1026;padding:10px;border-radius:8px}
+    footer{margin-top:12px;font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Practice Lab — Static Demo</h1>
+    <p class="lead">Ye ek simple static <strong>index.html</strong> file hai for learning. Isme chote demo features hain: fake login (client-side), a reflected DOM XSS demo using query parameter, aur instructions. <strong>Don't deploy secrets.</strong></p>
+
+    <div class="cols">
+      <div class="col">
+        <h3>Fake Login (client-side)</h3>
+        <p class="note">This login is purely front-end for demo. It will not accept automated bruteforce tools such as Hydra — use a real backend on a VM for online brute practice.</p>
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="enter username" autocomplete="off" />
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="enter password" autocomplete="off" />
+        <div style="margin-top:10px">
+          <button id="loginBtn">Login</button>
+          <span id="loginResult" style="margin-left:12px"></span>
+        </div>
+        <p class="note">Test credentials (demo): <code>admin</code> / <code>Password123!</code></p>
+      </div>
+
+      <div class="col">
+        <h3>Reflected / DOM XSS demo</h3>
+        <p class="note">This demo intentionally reflects the <code>q</code> query parameter into the page using <code>innerHTML</code>. Use this only on local/dev pages or labs.</p>
+        <label for="qparam">Try a query param (q)</label>
+        <input id="qparam" type="text" placeholder="type and press Render" />
+        <div style="margin-top:10px">
+          <button id="renderBtn">Render</button>
+        </div>
+        <div style="margin-top:12px" class="vuln">
+          <strong>Reflected output:</strong>
+          <div id="output" style="margin-top:8px;padding:8px;background:#071827;border-radius:6px;min-height:40px"></div>
+        </div>
+        <p class="note">Example payloads (only in controlled labs): <code>&lt;img src=x onerror=alert(1)&gt;</code> or <code>&lt;svg onload=alert(1)&gt;</code></p>
+      </div>
+    </div>
+
+    <hr style="margin:16px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)" />
+
+    <h3>Quick instructions / next steps</h3>
+    <ul>
+      <li>To test reflected DOM XSS via URL: open <code>?q=&lt;payload&gt;</code> after the page URL; the page will render the payload when you click <em>Render</em>.</li>
+      <li>If you want a backend login endpoint to practice Hydra against, tell me and I will provide a small Node/Flask server file you can run locally on your Kali VM.</li>
+      <li>Always practice on local VMs or authorized labs. Do not attack public sites.</li>
+    </ul>
+
+    <h3>Sample request/response view (for learning)</h3>
+    <pre id="sample">GET /?q=hello HTTP/1.1
+Host: example.com
+User-Agent: demo
+
+&lt;html&gt;...&lt;/html&gt;</pre>
+
+    <footer>Made for Arnav — change anything you want. If you want me to add a backend (Flask/Node) for real login testing, bol de.</footer>
+  </div>
+
+  <script>
+    // Demo credentials (client-side only)
+    const DEMO_USER = 'admin';
+    const DEMO_PASS = 'Password123!';
+
+    document.getElementById('loginBtn').addEventListener('click',()=>{
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      const out = document.getElementById('loginResult');
+      if(!u || !p){ out.textContent='Enter both fields'; return; }
+      if(u===DEMO_USER && p===DEMO_PASS){ out.textContent='Login successful (demo)'; out.style.color='#57ff9a'; }
+      else{ out.textContent='Invalid credentials'; out.style.color='#ff7b7b'; }
+    });
+
+    // Render reflected q param into page (intentionally vulnerable to DOM XSS for learning)
+    function getQueryParam(name){
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || '';
+    }
+
+    const output = document.getElementById('output');
+    const qfield = document.getElementById('qparam');
+    document.getElementById('renderBtn').addEventListener('click',()=>{
+      const val = qfield.value;
+      // intentionally using innerHTML for demo to show how unsanitized input can be dangerous
+      output.innerHTML = val;
+    });
+
+    // Auto-fill from URL if present
+    window.addEventListener('load',()=>{
+      const q = getQueryParam('q');
+      if(q){ document.getElementById('qparam').value = q; output.innerHTML = q; }
+    });
+  </script>
+</body>
+</html>
