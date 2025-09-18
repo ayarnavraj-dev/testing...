@@ -3,54 +3,77 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Local Lab — Login (HTML only)</title>
+  <title>Practice Lab — Demo Index</title>
   <style>
-    :root{--bg:#0b1220;--card:#0f1724;--accent:#2563eb;--muted:#9aa4bf}
-    body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#071023 0%,#0b1020 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;padding:20px}
-    .box{background:var(--card);padding:22px;border-radius:10px;width:420px;max-width:100%;box-shadow:0 8px 30px rgba(0,0,0,.6)}
-    h2{margin:0 0 12px;color:#fff;font-size:20px}
-    label{font-size:13px;color:var(--muted);display:block;margin-top:8px}
-    input{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:#071827;color:#e6eef8}
-    button{width:100%;padding:10px;margin-top:12px;border-radius:6px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    :root{--bg:#0b1020;--card:#0f1724;--accent:#2563eb;--muted:#9aa4bf}
+    body{font-family:Inter,system-ui,Segoe UI,Arial;background:linear-gradient(180deg,#071023 0%,#0b1020 100%);color:#e6eef8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:900px;max-width:100%;background:var(--card);border-radius:12px;padding:20px;box-shadow:0 10px 30px rgba(2,6,23,.6)}
+    h1{margin:0 0 8px;font-size:20px}
+    p.lead{color:var(--muted);margin:0 0 18px}
+    .cols{display:flex;gap:16px}
+    .col{flex:1}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    input[type=text],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#071823;color:#e6eef8}
+    button{background:var(--accent);border:0;padding:10px 14px;color:white;border-radius:8px;cursor:pointer}
     .note{font-size:12px;color:var(--muted);margin-top:8px}
-    .result{margin-top:10px;font-size:14px}
-    .success{color:#57ff9a}
-    .fail{color:#ff7b7b}
-    pre{background:#071627;padding:12px;border-radius:8px;overflow:auto;color:#cfe9ff;font-size:13px;line-height:1.45}
-    .post{margin-top:10px}
-    .signature{margin-top:12px;font-size:13px;color:#ffd6d6;text-align:center}
-    .small{font-size:12px;color:var(--muted)}
-    .commands{margin-top:10px}
-    .disclaimer{margin-top:8px;font-size:11px;color:#ffbf7b}
+    pre{background:#071627;padding:10px;border-radius:8px;overflow:auto;color:#cfe9ff}
+    .vuln{background:#1b1026;padding:10px;border-radius:8px}
+    footer{margin-top:12px;font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
-  <div class="box" id="mainBox">
-    <h2>Local Login (HTML only)</h2>
+  <div class="card">
+    <h1>Practice Lab — Static Demo</h1>
+    <p class="lead">Ye ek simple static <strong>index.html</strong> file hai for learning. Isme chote demo features hain: fake login (client-side), a reflected DOM XSS demo using query parameter, aur instructions. <strong>Don't deploy secrets.</strong></p>
 
-    <!--
-      NOTE: HTML-only demo. If opened directly (file://) this will simulate login client-side.
-      If served from a real server, the form will submit to /login (server must handle it).
-      Post-login content (made by ULTIMATE X with love + commands) is shown client-side after success.
-    -->
+    <div class="cols">
+      <div class="col">
+        <h3>Fake Login (client-side)</h3>
+        <p class="note">This login is purely front-end for demo. It will not accept automated bruteforce tools such as Hydra — use a real backend on a VM for online brute practice.</p>
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="enter username" autocomplete="off" />
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="enter password" autocomplete="off" />
+        <div style="margin-top:10px">
+          <button id="loginBtn">Login</button>
+          <span id="loginResult" style="margin-left:12px"></span>
+        </div>
+        <p class="note">Test credentials (demo): <code>admin</code> / <code>Password123!</code></p>
+      </div>
 
-    <form action="/login" method="post" id="loginForm" autocomplete="off">
-      <label for="username">Username</label>
-      <input name="username" id="username" type="text" placeholder="enter username" />
+      <div class="col">
+        <h3>Reflected / DOM XSS demo</h3>
+        <p class="note">This demo intentionally reflects the <code>q</code> query parameter into the page using <code>innerHTML</code>. Use this only on local/dev pages or labs.</p>
+        <label for="qparam">Try a query param (q)</label>
+        <input id="qparam" type="text" placeholder="type and press Render" />
+        <div style="margin-top:10px">
+          <button id="renderBtn">Render</button>
+        </div>
+        <div style="margin-top:12px" class="vuln">
+          <strong>Reflected output:</strong>
+          <div id="output" style="margin-top:8px;padding:8px;background:#071827;border-radius:6px;min-height:40px"></div>
+        </div>
+        <p class="note">Example payloads (only in controlled labs): <code>&lt;img src=x onerror=alert(1)&gt;</code> or <code>&lt;svg onload=alert(1)&gt;</code></p>
+      </div>
+    </div>
 
-      <label for="password">Password</label>
-      <input name="password" id="password" type="password" placeholder="enter password" />
+    <hr style="margin:16px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)" />
 
-      <button type="submit" id="loginBtn">Login</button>
-    </form>
+    <h3>Quick instructions / next steps</h3>
+    <ul>
+      <li>To test reflected DOM XSS via URL: open <code>?q=&lt;payload&gt;</code> after the page URL; the page will render the payload when you click <em>Render</em>.</li>
+      <li>If you want a backend login endpoint to practice Hydra against, tell me and I will provide a small Node/Flask server file you can run locally on your Kali VM.</li>
+      <li>Always practice on local VMs or authorized labs. Do not attack public sites.</li>
+    </ul>
 
-    <div class="note">Demo creds (for server): <strong>admin</strong> / <strong>Password123!</strong></div>
+    <h3>Sample request/response view (for learning)</h3>
+    <pre id="sample">GET /?q=hello HTTP/1.1
+Host: example.com
+User-Agent: demo
 
-    <div class="result" id="resultArea" aria-live="polite"></div>
+&lt;html&gt;...&lt;/html&gt;</pre>
 
-    <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
-
-    <div class="small">Open this file directly? (file://) — the form will be handled client-side for the demo. To practice real brute-force tools you must run a local server endpoint (e.g., Flask/Node) and only test against your own lab machines.</div>
+    <footer>Made for Arnav — change anything you want. If you want me to add a backend (Flask/Node) for real login testing, bol de.</footer>
   </div>
 
   <script>
@@ -58,95 +81,34 @@
     const DEMO_USER = 'admin';
     const DEMO_PASS = 'Password123!';
 
-    const mainBox = document.getElementById('mainBox');
-    const loginForm = document.getElementById('loginForm');
-    const resultArea = document.getElementById('resultArea');
-
-    function renderPostLoginView(username){
-      // Replace box contents with a post-login panel
-      mainBox.innerHTML = `
-        <h2>Welcome, ${escapeHtml(username)}!</h2>
-        <div class="post small">You are now in the local demo post-login view.</div>
-
-        <div class="post commands">
-          <strong>Made by ULTIMATE X with love ❤️</strong>
-          <div class="signature">— ULTIMATE X</div>
-
-          <div style="margin-top:12px">
-            <div class="small">Useful <strong>John the Ripper</strong> &amp; <strong>Hydra</strong> commands (lab use only):</div>
-            <pre>
-# ----- John the Ripper (offline hash cracking) -----
-# Simple wordlist attack against a known MD5 hash
-john --format=raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt
-
-# Use default format auto-detection with rules (faster & smarter)
-john --wordlist=/usr/share/wordlists/rockyou.txt --rules hashes.txt
-
-# Show cracked passwords
-john --show hashes.txt
-
-# Incremental brute-force (very slow, lab only)
-john --incremental hashes.txt
-
-# ----- Hydra (online brute forcing HTTP forms / SSH etc.) -----
-# SSH brute (single user)
-hydra -l root -P /usr/share/wordlists/rockyou.txt ssh://10.10.10.5 -t 4 -f -V
-
-# HTTP form brute example (replace host/path and failure string)
-hydra -l admin -P /root/rock500.txt http-post-form "127.0.0.1:5000/login:username=^USER^&password=^PASS^:F=Invalid username or password" -t 4 -V
-
-# Simple FTP brute example
-hydra -L users.txt -P /usr/share/wordlists/rockyou.txt ftp://127.0.0.1 -t 4 -f
-
-# Notes:
-# - Replace targets and ports with your lab machine addresses.
-# - Use small lists first (head -n 100) and low threads (-t 1 or 2) to avoid lockouts or harm.
-# - Always test only on systems you own or are authorized to test.
-            </pre>
-          </div>
-
-          <div class="disclaimer">⚠️ These commands are provided for learning and authorized lab use only. Never use them against systems you don't own or have permission to test.</div>
-        </div>
-      `;
-    }
-
-    // Simple HTML escape to avoid injection in demo
-    function escapeHtml(s){
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // If page served via file:// or hostname empty, intercept submission and handle client-side
-    loginForm.addEventListener('submit', function(e){
-      const proto = location.protocol;
-      const hostEmpty = (location.hostname === '' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-      if(proto === 'file:' || hostEmpty){
-        e.preventDefault();
-        const u = document.getElementById('username').value || '';
-        const p = document.getElementById('password').value || '';
-        if(u === DEMO_USER && p === DEMO_PASS){
-          resultArea.textContent = 'Login successful (demo - client side)';
-          resultArea.className = 'result success';
-          // show post-login view
-          setTimeout(()=> renderPostLoginView(u), 600);
-        } else {
-          resultArea.textContent = 'Invalid credentials (demo - client side)';
-          resultArea.className = 'result fail';
-        }
-      }
-      // If served from a server (e.g., http://127.0.0.1:5000), let the browser submit to /login
-      // and the server can redirect or return a page. This HTML-only file will not intercept that.
+    document.getElementById('loginBtn').addEventListener('click',()=>{
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      const out = document.getElementById('loginResult');
+      if(!u || !p){ out.textContent='Enter both fields'; return; }
+      if(u===DEMO_USER && p===DEMO_PASS){ out.textContent='Login successful (demo)'; out.style.color='#57ff9a'; }
+      else{ out.textContent='Invalid credentials'; out.style.color='#ff7b7b'; }
     });
 
-    // Optional: if page URL contains ?autologin=1&user=... (for quick demo), auto-login client-side
-    (function autoLoginFromQuery(){
-      try{
-        const params = new URLSearchParams(window.location.search);
-        if(params.get('autologin') === '1'){
-          const user = params.get('user') || DEMO_USER;
-          renderPostLoginView(user);
-        }
-      }catch(err){}
-    })();
+    // Render reflected q param into page (intentionally vulnerable to DOM XSS for learning)
+    function getQueryParam(name){
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || '';
+    }
+
+    const output = document.getElementById('output');
+    const qfield = document.getElementById('qparam');
+    document.getElementById('renderBtn').addEventListener('click',()=>{
+      const val = qfield.value;
+      // intentionally using innerHTML for demo to show how unsanitized input can be dangerous
+      output.innerHTML = val;
+    });
+
+    // Auto-fill from URL if present
+    window.addEventListener('load',()=>{
+      const q = getQueryParam('q');
+      if(q){ document.getElementById('qparam').value = q; output.innerHTML = q; }
+    });
   </script>
 </body>
 </html>
