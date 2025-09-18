@@ -7,7 +7,7 @@
   <style>
     :root{--bg:#0b1220;--card:#0f1724;--accent:#2563eb;--muted:#9aa4bf}
     body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#071023 0%,#0b1020 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;padding:20px}
-    .box{background:var(--card);padding:22px;border-radius:10px;width:360px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+    .box{background:var(--card);padding:22px;border-radius:10px;width:420px;max-width:100%;box-shadow:0 8px 30px rgba(0,0,0,.6)}
     h2{margin:0 0 12px;color:#fff;font-size:20px}
     label{font-size:13px;color:var(--muted);display:block;margin-top:8px}
     input{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:#071827;color:#e6eef8}
@@ -16,17 +16,22 @@
     .result{margin-top:10px;font-size:14px}
     .success{color:#57ff9a}
     .fail{color:#ff7b7b}
-    pre{background:#071627;padding:8px;border-radius:6px;overflow:auto;color:#cfe9ff;font-size:12px}
+    pre{background:#071627;padding:12px;border-radius:8px;overflow:auto;color:#cfe9ff;font-size:13px;line-height:1.45}
+    .post{margin-top:10px}
+    .signature{margin-top:12px;font-size:13px;color:#ffd6d6;text-align:center}
+    .small{font-size:12px;color:var(--muted)}
+    .commands{margin-top:10px}
+    .disclaimer{margin-top:8px;font-size:11px;color:#ffbf7b}
   </style>
 </head>
 <body>
-  <div class="box">
+  <div class="box" id="mainBox">
     <h2>Local Login (HTML only)</h2>
 
     <!--
-      NOTE: This file is HTML-only. It posts to /login.
-      To actually accept attempts (e.g., with Hydra) you need a local server
-      that handles POST /login. If you want that, run a small Flask/Node server on your machine.
+      NOTE: HTML-only demo. If opened directly (file://) this will simulate login client-side.
+      If served from a real server, the form will submit to /login (server must handle it).
+      Post-login content (made by ULTIMATE X with love + commands) is shown client-side after success.
     -->
 
     <form action="/login" method="post" id="loginForm" autocomplete="off">
@@ -36,7 +41,7 @@
       <label for="password">Password</label>
       <input name="password" id="password" type="password" placeholder="enter password" />
 
-      <button type="submit">Login</button>
+      <button type="submit" id="loginBtn">Login</button>
     </form>
 
     <div class="note">Demo creds (for server): <strong>admin</strong> / <strong>Password123!</strong></div>
@@ -45,43 +50,103 @@
 
     <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
 
-    <div>
-      <strong>Quick tips:</strong>
-      <ul style="color:var(--muted);padding-left:18px;margin:8px 0 0 0">
-        <li>If you open this file directly (file://) the form will not post — serve it or host on GitHub Pages to see form submit attempt.</li>
-        <li>Hydra requires a real HTTP endpoint (like http://127.0.0.1:5000/login) to brute-force.</li>
-      </ul>
-    </div>
-
-    <pre>
-POST /login HTTP/1.1
-Host: 127.0.0.1:5000
-Content-Type: application/x-www-form-urlencoded
-
-username=admin&password=Password123!
-    </pre>
+    <div class="small">Open this file directly? (file://) — the form will be handled client-side for the demo. To practice real brute-force tools you must run a local server endpoint (e.g., Flask/Node) and only test against your own lab machines.</div>
   </div>
 
   <script>
-    // Small JS to show a friendly client-side response when opened directly
-    document.getElementById('loginForm').addEventListener('submit', function(e){
-      // If the page is opened via file:// or no network, prevent actual submit and show demo message
-      if(location.protocol === 'file:' || location.hostname === ''){
+    // Demo credentials (client-side only)
+    const DEMO_USER = 'admin';
+    const DEMO_PASS = 'Password123!';
+
+    const mainBox = document.getElementById('mainBox');
+    const loginForm = document.getElementById('loginForm');
+    const resultArea = document.getElementById('resultArea');
+
+    function renderPostLoginView(username){
+      // Replace box contents with a post-login panel
+      mainBox.innerHTML = `
+        <h2>Welcome, ${escapeHtml(username)}!</h2>
+        <div class="post small">You are now in the local demo post-login view.</div>
+
+        <div class="post commands">
+          <strong>Made by ULTIMATE X with love ❤️</strong>
+          <div class="signature">— ULTIMATE X</div>
+
+          <div style="margin-top:12px">
+            <div class="small">Useful <strong>John the Ripper</strong> &amp; <strong>Hydra</strong> commands (lab use only):</div>
+            <pre>
+# ----- John the Ripper (offline hash cracking) -----
+# Simple wordlist attack against a known MD5 hash
+john --format=raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt
+
+# Use default format auto-detection with rules (faster & smarter)
+john --wordlist=/usr/share/wordlists/rockyou.txt --rules hashes.txt
+
+# Show cracked passwords
+john --show hashes.txt
+
+# Incremental brute-force (very slow, lab only)
+john --incremental hashes.txt
+
+# ----- Hydra (online brute forcing HTTP forms / SSH etc.) -----
+# SSH brute (single user)
+hydra -l root -P /usr/share/wordlists/rockyou.txt ssh://10.10.10.5 -t 4 -f -V
+
+# HTTP form brute example (replace host/path and failure string)
+hydra -l admin -P /root/rock500.txt http-post-form "127.0.0.1:5000/login:username=^USER^&password=^PASS^:F=Invalid username or password" -t 4 -V
+
+# Simple FTP brute example
+hydra -L users.txt -P /usr/share/wordlists/rockyou.txt ftp://127.0.0.1 -t 4 -f
+
+# Notes:
+# - Replace targets and ports with your lab machine addresses.
+# - Use small lists first (head -n 100) and low threads (-t 1 or 2) to avoid lockouts or harm.
+# - Always test only on systems you own or are authorized to test.
+            </pre>
+          </div>
+
+          <div class="disclaimer">⚠️ These commands are provided for learning and authorized lab use only. Never use them against systems you don't own or have permission to test.</div>
+        </div>
+      `;
+    }
+
+    // Simple HTML escape to avoid injection in demo
+    function escapeHtml(s){
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // If page served via file:// or hostname empty, intercept submission and handle client-side
+    loginForm.addEventListener('submit', function(e){
+      const proto = location.protocol;
+      const hostEmpty = (location.hostname === '' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+      if(proto === 'file:' || hostEmpty){
         e.preventDefault();
         const u = document.getElementById('username').value || '';
         const p = document.getElementById('password').value || '';
-        const res = document.getElementById('resultArea');
-        if(u === 'admin' && p === 'Password123!'){
-          res.textContent = 'Login successful (demo - client side)';
-          res.className = 'result success';
+        if(u === DEMO_USER && p === DEMO_PASS){
+          resultArea.textContent = 'Login successful (demo - client side)';
+          resultArea.className = 'result success';
+          // show post-login view
+          setTimeout(()=> renderPostLoginView(u), 600);
         } else {
-          res.textContent = 'Invalid credentials (demo - client side)';
-          res.className = 'result fail';
+          resultArea.textContent = 'Invalid credentials (demo - client side)';
+          resultArea.className = 'result fail';
         }
       }
-      // Otherwise let the browser submit to /login (server must handle it)
+      // If served from a server (e.g., http://127.0.0.1:5000), let the browser submit to /login
+      // and the server can redirect or return a page. This HTML-only file will not intercept that.
     });
+
+    // Optional: if page URL contains ?autologin=1&user=... (for quick demo), auto-login client-side
+    (function autoLoginFromQuery(){
+      try{
+        const params = new URLSearchParams(window.location.search);
+        if(params.get('autologin') === '1'){
+          const user = params.get('user') || DEMO_USER;
+          renderPostLoginView(user);
+        }
+      }catch(err){}
+    })();
   </script>
 </body>
 </html>
-
